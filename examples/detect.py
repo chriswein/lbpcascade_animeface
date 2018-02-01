@@ -1,6 +1,19 @@
 import cv2
 import sys
 import os.path
+import json
+import base64 
+import webbrowser
+import requests
+import urllib3
+
+def askgoogle(filename):
+ filePath = filename
+ searchUrl = 'http://www.google.com/searchbyimage/upload'
+ multipart = {'encoded_image': (filePath, open(filePath, 'rb')), 'image_content': ''}
+ response = requests.post(searchUrl, files=multipart, allow_redirects=False)
+ fetchUrl = response.headers['Location']
+ webbrowser.open(fetchUrl)
 
 def detect(filename, cascade_file = "../lbpcascade_animeface.xml"):
     if not os.path.isfile(cascade_file):
@@ -16,12 +29,19 @@ def detect(filename, cascade_file = "../lbpcascade_animeface.xml"):
                                      scaleFactor = 1.1,
                                      minNeighbors = 5,
                                      minSize = (24, 24))
+    
+    i = 0
+    crop_img = image
     for (x, y, w, h) in faces:
-        cv2.rectangle(image, (x, y), (x + w, y + h), (0, 0, 255), 2)
-
-    cv2.imshow("AnimeFaceDetect", image)
-    cv2.waitKey(0)
-    cv2.imwrite("out.png", image)
+    	i+=1;
+    	if i == 1:
+    	 crop_img = image[y:y+h, x:x+w]
+    	 
+    	 
+    #cv2.imshow("AnimeFaceDetect", image)
+    cv2.waitKey(1)
+    cv2.imwrite("out.png", crop_img)
+    askgoogle("out.png")
 
 if len(sys.argv) != 2:
     sys.stderr.write("usage: detect.py <filename>\n")
